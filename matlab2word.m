@@ -93,7 +93,7 @@ classdef matlab2word < handle
     
     methods
         function this = matlab2word(filename)
-            %MATLAB2WORD Construct an instance of this class
+            %matlab2word Construct an instance of this class
             %   Takes one additional argument as a filename string.
             %   if argument missed, function asks user to select a template
             %   file
@@ -148,57 +148,9 @@ classdef matlab2word < handle
             % Search
             find.Execute();
             while find.Found % If found something
-                if isfloat(replace_data)
-                    % Paste number
-                    float_str =  num2str(replace_data);
-                    % Replace dot by comma if needed
-                    if strcmp(this.decimalSeparator, 'comma')
-                        float_str = replace(float_str, '.', ',');
-                    end
-                    % Fix position of imaginary unit in small or large numbers
-                    % (for example replace '3,86e-18-1,3e-11i' by '3,86e-18-1,3ie-11')
-                    if (~isreal(replace_data) && (contains(num2str(imag(replace_data)), 'e')))
-                        e_index = numel(float_str);
-                        while (float_str(e_index) ~= 'e')
-                            e_index = e_index - 1;
-                        end
-                        float_str = [float_str(1:(e_index-1)), 'ie', ...
-                            float_str((e_index+1):(end-1))];
-                    end
-                    % Replace i by j here for imaginary units if needed
-                    if strcmp(this.imaginaryUnit, 'j')
-                        float_str = replace(float_str, 'i', 'j');
-                    end
-                    % Prints different types of number
-                    if contains(float_str, 'e')
-                        % Replace e by power of 10
-                        float_str = replace(float_str, 'e', '⋅10^');
-                        this.selection.TypeText(' ');
-                        this.selection.TypeBackspace();
-                        this.selection.OMaths.Add(this.selection.Range);
-                        this.selection.TypeText(float_str);
-                        this.selection.MoveLeft(1, length(float_str), 1);
-                        %1=character mode
-                        %with this command we mark the previous text%length(text)=amount
-                        %1=hold shift
-                        % For correct imaginary unit replace
-                        this.selection.Font.Italic = 0;
-                        this.selection.OMaths.BuildUp();
-                    else
-                        this.selection.TypeText(float_str);
-                        this.selection.MoveLeft(1, length(float_str), 1);
-                        this.selection.Font.Italic = 0; %
-                    end
-                else
-                    if isgraphics(replace_data)
-                        % Paste figure
-                        print(replace_data, '-clipboard', '-dbitmap');
-                        this.selection.Paste();
-                    else
-                        % Paste string
-                        this.selection.TypeText(replace_data);
-                    end
-                end
+                
+                this.PasteData(replace_data);
+                
                 % Make search one more time to find all instances
                 find.ClearFormatting();
                 find.Replacement.ClearFormatting();
@@ -243,6 +195,57 @@ classdef matlab2word < handle
             delete(replace_file);
         end
         
+        function PasteTable(this, replace_id, replace_table)
+            %PasteTable Can replace various size of tables with table input
+            %   data type
+            
+            % Check if input data is table
+            if ismatrix(replace_table)
+                if (iscell(replace_table))
+                    replace_table = cell2table(replace_table);
+                elseif (~istable(replace_table))
+                    replace_table = array2table(replace_table);
+                end
+            else
+                error('Input variable is not a table!');
+            end
+            
+            % Add brackets to search  string
+            findString = ['<', replace_id, '>'];
+            find = this.selection.Find;
+            % Search parameters setup
+            find.ClearFormatting();
+            find.Replacement.ClearFormatting();
+            find.Text = findString;
+            find.Wrap = 1;
+            find.MatchCase = true;
+            % Search
+            find.Execute();
+            while find.Found % If found something
+                
+                % Paste table algorithm
+                t_rows = numel(replace_table(:, 1));
+                t_cols = numel(replace_table(1, :));
+                for i = 1:t_rows
+                    for j = 1:t_cols
+                        this.PasteData(replace_table{i, j});
+                        if ((i < t_rows) || (j < t_cols))
+                            % move to the next cell (12 - wdCell)
+                            this.selection.MoveRight(12);
+                        end
+                    end
+                end
+                
+                % Make search one more time to find all instances
+                find.ClearFormatting();
+                find.Replacement.ClearFormatting();
+                find.Text = findString;
+                find.Wrap = 1;
+                find.MatchCase = true;
+                find.Execute();
+            end
+        end
+        
         function Save(this)
             %Save Saves Word file
             %   This method should called in the end of file to save it
@@ -263,7 +266,7 @@ classdef matlab2word < handle
         
         function SaveManually(this)
             %SaveManually Saves Word file with asking user for file name
-            %and path
+            %   and path
             %   This method should called in the end of file to save it
             
             % Prepare out file name and extention
@@ -291,7 +294,7 @@ classdef matlab2word < handle
         
         function SetDecimalSeparator(this, separator)
             %SetDecimalSeparator Sets decimal separator for float numeric
-            %data
+            %   data
             %   Dot separator is set by default. You can change separator
             %   to comma by calling this method with argument 'comma'
             if (nargin == 2) && strcmpi(separator, 'comma')
@@ -313,7 +316,7 @@ classdef matlab2word < handle
         end
         
         function delete(this)
-            %DELETE Destructor of class
+            %delete Destructor of class
             %   Closes Word and deletes its instance
             
             this.document.Close();  % Close Word file
@@ -323,4 +326,70 @@ classdef matlab2word < handle
         end
         
     end
+    
+    methods (Access=private, Hidden)
+        
+        function PasteData(this, replace_data)
+            %PasteData Just checks data format and pastes it
+            % проверить на cell array если не будет работать то выдернуть
+            % его
+            
+            if iscell(replace_data)
+                % if input data is a cell with char array from table
+                this.selection.TypeText(replace_data{1, 1});
+            elseif isfloat(replace_data)
+                % Paste number
+                float_str =  num2str(replace_data);
+                % Replace dot by comma if needed
+                if strcmp(this.decimalSeparator, 'comma')
+                    float_str = replace(float_str, '.', ',');
+                end
+                % Fix position of imaginary unit in small or large numbers
+                % (for example replace '3,86e-18-1,3e-11i' by '3,86e-18-1,3ie-11')
+                if (~isreal(replace_data) && (contains(num2str(imag(replace_data)), 'e')))
+                    e_index = numel(float_str);
+                    while (float_str(e_index) ~= 'e')
+                        e_index = e_index - 1;
+                    end
+                    float_str = [float_str(1:(e_index-1)), 'ie', ...
+                        float_str((e_index+1):(end-1))];
+                end
+                % Replace i by j here for imaginary units if needed
+                if strcmp(this.imaginaryUnit, 'j')
+                    float_str = replace(float_str, 'i', 'j');
+                end
+                % Prints different types of number
+                if contains(float_str, 'e')
+                    % delete + sign near power
+                    float_str = replace(float_str, 'e+', 'e');
+                    % Replace e by power of 10
+                    float_str = replace(float_str, 'e', '⋅10^');
+                    this.selection.TypeText(' ');
+                    this.selection.TypeBackspace();
+                    this.selection.OMaths.Add(this.selection.Range);
+                    this.selection.TypeText(float_str);
+                    this.selection.MoveLeft(1, length(float_str), 1);
+                    %1=character mode
+                    %with this command we mark the previous text%length(text)=amount
+                    %1=hold shift
+                    % For correct imaginary unit replace
+                    this.selection.Font.Italic = 0;
+                    this.selection.OMaths.BuildUp();
+                else
+                    this.selection.TypeText(float_str);
+                    this.selection.MoveLeft(1, length(float_str), 1);
+                    this.selection.Font.Italic = 0; %
+                end
+            elseif isgraphics(replace_data)
+                % Paste figure
+                print(replace_data, '-clipboard', '-dbitmap');
+                this.selection.Paste();
+            else
+                % Paste string
+                this.selection.TypeText(replace_data);
+            end
+        end
+        
+    end
+    
 end
