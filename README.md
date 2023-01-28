@@ -14,3 +14,7 @@ v1.1.0 - Added some features
 If you want to select a place to save, use method .SaveManually()
 -   You can change your default imaginary unit using function .SetImaginaryUnit('j')
 -   You can use data for replacement not only from MATLAB, but also from other file
+
+v1.2.0 - Code improvements and added table replacement
+-   Now for using comma as a decimal separator call .SetDecimalSeparator(',')
+-   You can data in table with undefined number of rows
