@@ -1,7 +1,7 @@
 # matlab2word
 A MatLAB library that allows to write your calculations into Word template file.
 It might be useful when you have a report template which has specific formatting and requires some calculations.
-See how to use this library in files matlab2word_example_en.mlx or matlab2word_example_ru.mlx (open these files in MatLAB).
+See how to use this library in files matlab2word_example_en.mlx or matlab2word_example_ru.mlx (open these files in MatLAB). If you stil have questions, feel free to contact me: tan4ukmak7@gmail.com
 
 
 Version history
