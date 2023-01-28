@@ -36,7 +36,7 @@ classdef matlab2word < handle
     % % Create an instance of matlab2word object and get access to Word file
     % m2w = matlab2word();
     % % Set decimal separator and imaginary unit if needed
-    % m2w.SetDecimalSeparator('comma');
+    % m2w.SetDecimalSeparator(',');
     % m2w.SetImaginaryUnit('j');
     % % Replace variables
     % m2w.Replace('string_example', test_string);
@@ -73,7 +73,7 @@ classdef matlab2word < handle
     %     OTHER DEALINGS IN THE SOFTWARE.
     
     properties (SetAccess=private)
-        % Stores decimal separetor parameter ('dot' by default)
+        % Stores decimal separetor parameter ('.' by default)
         decimalSeparator
         % Stores imaginary unit parameter ('i' by default)
         imaginaryUnit
@@ -125,7 +125,7 @@ classdef matlab2word < handle
             this.selection = this.word.Selection;
             
             % Set default decimal separator to dot
-            this.decimalSeparator = 'dot';
+            this.decimalSeparator = '.';
             % Set default imaginary unit to i
             this.imaginaryUnit = 'i';
         end
@@ -296,11 +296,11 @@ classdef matlab2word < handle
             %SetDecimalSeparator Sets decimal separator for float numeric
             %   data
             %   Dot separator is set by default. You can change separator
-            %   to comma by calling this method with argument 'comma'
-            if (nargin == 2) && strcmpi(separator, 'comma')
-                this.decimalSeparator = 'comma';
+            %   to comma by calling this method with argument ','
+            if (nargin == 2) && strcmpi(separator, ',')
+                this.decimalSeparator = ',';
             else
-                this.decimalSeparator = 'dot';
+                this.decimalSeparator = '.';
             end
         end
         
@@ -341,7 +341,7 @@ classdef matlab2word < handle
                 % Paste number
                 float_str =  num2str(replace_data);
                 % Replace dot by comma if needed
-                if strcmp(this.decimalSeparator, 'comma')
+                if strcmp(this.decimalSeparator, ',')
                     float_str = replace(float_str, '.', ',');
                 end
                 % Fix position of imaginary unit in small or large numbers
