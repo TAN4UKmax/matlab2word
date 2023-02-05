@@ -104,7 +104,7 @@ classdef matlab2word < handle
                 [inFilePath,inFileName,inFileExt] = fileparts(filename);
                 if isempty(inFilePath); inFilePath = pwd; end
                 if isempty(inFileExt); inFileExt = '.docx'; end
-                this.inFileSpec = fullfile(inFilePath, [inFileName, inFileExt]);
+                inFileName = append(inFileName, inFileExt);
             else % if no filename provided
                 % Ask user to open file
                 [inFileName, inFilePath] = uigetfile( ...
@@ -115,9 +115,9 @@ classdef matlab2word < handle
                     % Finish script
                     error('Error! Template file open failed!');
                 end
-                % Generate full file path
-                this.inFileSpec = fullfile(inFilePath, inFileName);
             end
+            % Generate full file path
+            this.inFileSpec = fullfile(inFilePath, inFileName);
             % Open file
             this.word = actxserver('Word.Application');
             this.word.Visible =1; % shows Word window
@@ -246,15 +246,24 @@ classdef matlab2word < handle
             end
         end
         
-        function Save(this)
+        function Save(this, filename)
             %Save Saves Word file
             %   This method should called in the end of file to save it
-            
-            % Prepare out file name and extention
-            [outFilePath, outFileName, fileExt] = fileparts(this.inFileSpec);
-            outFileName = append(outFileName, '_out', fileExt);
-            % make output path
+
+            % if filename is provided
+            if (nargin == 2)
+                % Check validity of input file path
+                [outFilePath,outFileName,outFileExt] = fileparts(filename);
+                if isempty(outFilePath); outFilePath = pwd; end
+                if isempty(outFileExt); outFileExt = '.docx'; end
+                outFileName = append(outFileName, outFileExt);
+            else % if no filename provided
+                % Prepare default out file name and extention
+                [outFilePath, outFileName, fileExt] = fileparts(this.inFileSpec);
+                outFileName = append(outFileName, '_out', fileExt);
+            end
             outFileSpec = fullfile(outFilePath, outFileName);
+            
             % Delete old report
             if isfile(outFileSpec)
                 delete(outFileSpec);
