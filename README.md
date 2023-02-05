@@ -2,7 +2,7 @@
 A MATLAB library that allows writing your calculations into a Word template file.
 It might be useful when you have a report template that has specific formatting and requires some calculations.
 See how to use this library in files matlab2word_example_en.mlx or matlab2word_example_ru.mlx (open these files in MATLAB).
-If you still have questions, feel free to contact me: tan4ukmak7@gmail.com
+If you still have questions, feel free to contact me: tan4ukmak7@gmail.com.\n
 Special thanks to Оль Роман and Шевченко Алина for help in developing this library.
 
 
