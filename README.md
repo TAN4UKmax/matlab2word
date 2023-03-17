@@ -6,10 +6,20 @@ If you still have questions, feel free to contact me: tan4ukmak7@gmail.com.
 Special thanks to Оль Роман and Шевченко Алина for help in developing this library.
 
 
+Minimum requirements: MATLAB 2013b or higher
+
+
 Version History
 
-v1.0.0 - Initial version.
--   Abilities to write text, numbers, and plots into Word.
+v1.4.0 - Compatibility update
+-   You can use this library on old MATLAB versions
+
+v1.3.0 - Spelling fix and saving file features
+-   You can specify output file name explicitly as well as for the input file.
+
+v1.2.0 - Code improvements and added table replacement
+-   Now for using comma as a decimal separator call .SetDecimalSeparator(',').
+-   You can paste data in a table with an undefined number of rows.
 
 v1.1.0 - Added some features
 -   Now your result saves automatically by adding _out part to your input file.
@@ -17,9 +27,5 @@ If you want to select a place to save, use the method .SaveManually().
 -   You can change your default imaginary unit using a function .SetImaginaryUnit('j').
 -   You can use data for replacement not only from MATLAB but also from another file.
 
-v1.2.0 - Code improvements and added table replacement
--   Now for using comma as a decimal separator call .SetDecimalSeparator(',').
--   You can paste data in a table with an undefined number of rows.
-
-v1.3.0 - Spelling fix and saving file features
--   You can specify output file name explicitly as well as for the input file.
+v1.0.0 - Initial version.
+-   Abilities to write text, numbers, and plots into Word.

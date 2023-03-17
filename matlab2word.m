@@ -1,6 +1,6 @@
 classdef matlab2word < handle
     %MATLAB2WORD Transfers calculations to Word report
-    %   matlab2word v1.0
+    %   matlab2word v1.4.0
     %   Created by TAN4UK
     %   This library can help to transfer your calculations into
     %   Microsoft Word report file.
@@ -98,13 +98,18 @@ classdef matlab2word < handle
             %   if argument missed, function asks user to select a template
             %   file
             
+            % Check the minimal version
+            if verLessThan('matlab','8.2')
+                error('MATLAB 2013b or higher is required.')
+            end
+            
             % if filename is provided
             if (nargin == 1)
                 % Check validity of input file path
                 [inFilePath,inFileName,inFileExt] = fileparts(filename);
                 if isempty(inFilePath); inFilePath = pwd; end
                 if isempty(inFileExt); inFileExt = '.docx'; end
-                inFileName = append(inFileName, inFileExt);
+                inFileName = [inFileName, inFileExt];
             else % if no filename provided
                 % Ask user to open file
                 [inFileName, inFilePath] = uigetfile( ...
@@ -180,10 +185,11 @@ classdef matlab2word < handle
             find.Execute();
             while find.Found % If found something
                 replace_file.selection.WholeStory();
+                replace_file.selection.MoveLeft(1, 1, 1);
                 replace_file.selection.Copy();
                 % 16 = wdFormatOriginalFormatting
                 this.selection.PasteAndFormat(16);
-                
+               
                 % Make search one more time to find all instances
                 find.ClearFormatting();
                 find.Replacement.ClearFormatting();
@@ -249,24 +255,31 @@ classdef matlab2word < handle
         function Save(this, filename)
             %Save Saves Word file
             %   This method should called in the end of file to save it
-
+            
             % if filename is provided
             if (nargin == 2)
                 % Check validity of input file path
                 [outFilePath,outFileName,outFileExt] = fileparts(filename);
                 if isempty(outFilePath); outFilePath = pwd; end
                 if isempty(outFileExt); outFileExt = '.docx'; end
-                outFileName = append(outFileName, outFileExt);
+                outFileName = [outFileName, outFileExt];
             else % if no filename provided
                 % Prepare default out file name and extention
                 [outFilePath, outFileName, fileExt] = fileparts(this.inFileSpec);
-                outFileName = append(outFileName, '_out', fileExt);
+                outFileName = [outFileName, '_out', fileExt];
             end
             outFileSpec = fullfile(outFilePath, outFileName);
-            
             % Delete old report
-            if isfile(outFileSpec)
-                delete(outFileSpec);
+            if ~verLessThan('matlab','9.3')
+                % -- Code to run in MATLAB R2017b and later here --
+                if isfile(outFileSpec)
+                    delete(outFileSpec);
+                end
+            else
+                % -- Code to run in MATLAB old versions --
+                if exist(outFileSpec, 'file')
+                    delete(outFileSpec);
+                end
             end
             % Save new document
             this.document.SaveAs2(outFileSpec);
@@ -280,7 +293,7 @@ classdef matlab2word < handle
             
             % Prepare out file name and extention
             [~, outFileName, fileExt] = fileparts(this.inFileSpec);
-            outFileName = append(outFileName, '_out', fileExt);
+            outFileName = [outFileName, '_out', fileExt];
             % Ask user to confirm output file name or select another one
             [outFileName, outFilePath] = uiputfile( ...
                 {'*.docx', 'Word Documents (*.docx)'}, ...
@@ -293,8 +306,16 @@ classdef matlab2word < handle
             % make output path
             outFileSpec = fullfile(outFilePath, outFileName);
             % Delete old report
-            if isfile(outFileSpec)
-                delete(outFileSpec);
+            if ~verLessThan('matlab','9.3')
+                % -- Code to run in MATLAB R2017b and later here --
+                if isfile(outFileSpec)
+                    delete(outFileSpec);
+                end
+            else
+                % -- Code to run in MATLAB old versions --
+                if exist(outFileSpec, 'file')
+                    delete(outFileSpec);
+                end
             end
             % Save new document
             this.document.SaveAs2(outFileSpec);
@@ -329,7 +350,7 @@ classdef matlab2word < handle
             %   Closes Word and deletes its instance
             
             this.document.Close();  % Close Word file
-            this.word.Quit();       % Close Word app
+            this.word.Quit(0);      % Close Word app without any alerts
             % Delete Word object (it also deletes all related instances)
             delete(this.word);
         end
@@ -340,8 +361,6 @@ classdef matlab2word < handle
         
         function PasteData(this, replace_data)
             %PasteData Just checks data format and pastes it
-            % проверить на cell array если не будет работать то выдернуть
-            % его
             
             if iscell(replace_data)
                 % if input data is a cell with char array from table
@@ -350,12 +369,12 @@ classdef matlab2word < handle
                 % Paste number
                 float_str =  num2str(replace_data);
                 % Replace dot by comma if needed
-                if strcmp(this.decimalSeparator, ',')
-                    float_str = replace(float_str, '.', ',');
+                if strcmpi(this.decimalSeparator, ',')
+                    float_str = strrep(float_str, '.', ',');
                 end
                 % Fix position of imaginary unit in small or large numbers
                 % (for example replace '3,86e-18-1,3e-11i' by '3,86e-18-1,3ie-11')
-                if (~isreal(replace_data) && (contains(num2str(imag(replace_data)), 'e')))
+                if (~isreal(replace_data) && ~isempty(strfind(num2str(imag(replace_data)), 'e')))
                     e_index = numel(float_str);
                     while (float_str(e_index) ~= 'e')
                         e_index = e_index - 1;
@@ -365,14 +384,14 @@ classdef matlab2word < handle
                 end
                 % Replace i by j here for imaginary units if needed
                 if strcmp(this.imaginaryUnit, 'j')
-                    float_str = replace(float_str, 'i', 'j');
+                    float_str = strrep(float_str, 'i', 'j');
                 end
                 % Prints different types of number
-                if contains(float_str, 'e')
+                if ~isempty(strfind(float_str, 'e'))
                     % delete + sign near power
-                    float_str = replace(float_str, 'e+', 'e');
+                    float_str = strrep(float_str, 'e+', 'e');
                     % Replace e by power of 10
-                    float_str = replace(float_str, 'e', '⋅10^');
+                    float_str = strrep(float_str, 'e', '⋅10^');
                     this.selection.TypeText(' ');
                     this.selection.TypeBackspace();
                     this.selection.OMaths.Add(this.selection.Range);
@@ -382,17 +401,19 @@ classdef matlab2word < handle
                     %with this command we mark the previous text%length(text)=amount
                     %1=hold shift
                     % For correct imaginary unit replace
-                    this.selection.Font.Italic = 0;
+                    %                     this.selection.Font.Italic = 0;
                     this.selection.OMaths.BuildUp();
                 else
                     this.selection.TypeText(float_str);
                     this.selection.MoveLeft(1, length(float_str), 1);
                     this.selection.Font.Italic = 0; %
                 end
-            elseif isgraphics(replace_data)
-                % Paste figure
-                print(replace_data, '-clipboard', '-dbitmap');
-                this.selection.Paste();
+            elseif ishandle(replace_data)
+                if ~isempty(get(replace_data,'Type'))
+                    % Paste figure
+                    print(replace_data, '-clipboard', '-dbitmap');
+                    this.selection.Paste();
+                end
             else
                 % Paste string
                 this.selection.TypeText(replace_data);
