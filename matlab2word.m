@@ -1,6 +1,6 @@
 classdef matlab2word < handle
     %MATLAB2WORD Transfers calculations to Word report
-    %   matlab2word v1.4.0
+    %   matlab2word v1.4.1
     %   Created by TAN4UK
     %   This library can help to transfer your calculations into
     %   Microsoft Word report file.
@@ -187,9 +187,7 @@ classdef matlab2word < handle
                 replace_file.selection.WholeStory();
                 replace_file.selection.MoveLeft(1, 1, 1);
                 replace_file.selection.Copy();
-                % 16 = wdFormatOriginalFormatting
-                this.selection.PasteAndFormat(16);
-               
+                this.selection.Paste();
                 % Make search one more time to find all instances
                 find.ClearFormatting();
                 find.Replacement.ClearFormatting();
@@ -198,6 +196,7 @@ classdef matlab2word < handle
                 find.MatchCase = true;
                 find.Execute();
             end
+            replace_file.Close();
             delete(replace_file);
         end
         
@@ -283,7 +282,7 @@ classdef matlab2word < handle
             end
             % Save new document
             this.document.SaveAs2(outFileSpec);
-            delete(this);
+            this.Close();
         end
         
         function SaveManually(this)
@@ -319,7 +318,7 @@ classdef matlab2word < handle
             end
             % Save new document
             this.document.SaveAs2(outFileSpec);
-            delete(this);
+            this.Close();
         end
         
         function SetDecimalSeparator(this, separator)
@@ -347,10 +346,6 @@ classdef matlab2word < handle
         
         function delete(this)
             %delete Destructor of class
-            %   Closes Word and deletes its instance
-            
-            this.document.Close();  % Close Word file
-            this.word.Quit(0);      % Close Word app without any alerts
             % Delete Word object (it also deletes all related instances)
             delete(this.word);
         end
@@ -391,22 +386,33 @@ classdef matlab2word < handle
                     % delete + sign near power
                     float_str = strrep(float_str, 'e+', 'e');
                     % Replace e by power of 10
-                    float_str = strrep(float_str, 'e', '⋅10^');
+                    float_str = strrep(float_str, 'e', '*10^');
                     this.selection.TypeText(' ');
                     this.selection.TypeBackspace();
                     this.selection.OMaths.Add(this.selection.Range);
-                    this.selection.TypeText(float_str);
+                    for i = 1:length(float_str)
+                       if  (float_str(i) ~= '*')
+                           this.selection.TypeText(float_str(i));
+                       else
+                           % Type multiplication character
+                           this.selection.TypeText('22C5');
+                           this.selection.MoveLeft(1, 4, 1);
+                           this.selection.ToggleCharacterCode();
+                           this.selection.MoveRight(1, 1);
+                       end
+                    end
+                    
                     this.selection.MoveLeft(1, length(float_str), 1);
                     %1=character mode
                     %with this command we mark the previous text%length(text)=amount
                     %1=hold shift
                     % For correct imaginary unit replace
-                    %                     this.selection.Font.Italic = 0;
+                    this.selection.Font.Italic = 0;
                     this.selection.OMaths.BuildUp();
                 else
                     this.selection.TypeText(float_str);
                     this.selection.MoveLeft(1, length(float_str), 1);
-                    this.selection.Font.Italic = 0; %
+                    this.selection.Font.Italic = 0;
                 end
             elseif ishandle(replace_data)
                 if ~isempty(get(replace_data,'Type'))
@@ -418,6 +424,12 @@ classdef matlab2word < handle
                 % Paste string
                 this.selection.TypeText(replace_data);
             end
+        end
+        
+        function Close(this)
+            %Close Closes the document and the application
+            this.document.Close(0);  % Close Word file without saving it
+            this.word.Quit(0);      % Close Word app without any alerts
         end
         
     end
