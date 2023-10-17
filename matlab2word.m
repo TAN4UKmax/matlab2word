@@ -1,6 +1,6 @@
 classdef matlab2word < handle
     %MATLAB2WORD Transfers calculations to Word report
-    %   matlab2word v1.4.1
+    %   matlab2word v1.4.2
     %   Created by TAN4UK
     %   This library can help to transfer your calculations into
     %   Microsoft Word report file.
@@ -49,7 +49,7 @@ classdef matlab2word < handle
     %
     %
     %   LICENSE
-    %     Copyright (C) 2022 TAN4UK. All Rights Reserved.
+    %     Copyright (C) 2023 TAN4UK. All Rights Reserved.
     %
     %     Permission is hereby granted, free of charge, to any person
     %     obtaining a copy of this software and associated documentation
@@ -146,7 +146,6 @@ classdef matlab2word < handle
             find = this.selection.Find;
             % Search parameters setup
             find.ClearFormatting();
-            find.Replacement.ClearFormatting();
             find.Text = findString;
             find.Wrap = 1;
             find.MatchCase = true;
@@ -158,7 +157,6 @@ classdef matlab2word < handle
                 
                 % Make search one more time to find all instances
                 find.ClearFormatting();
-                find.Replacement.ClearFormatting();
                 find.Text = findString;
                 find.Wrap = 1;
                 find.MatchCase = true;
@@ -177,7 +175,6 @@ classdef matlab2word < handle
             find = this.selection.Find;
             % Search parameters setup
             find.ClearFormatting();
-            find.Replacement.ClearFormatting();
             find.Text = findString;
             find.Wrap = 1;
             find.MatchCase = true;
@@ -190,7 +187,6 @@ classdef matlab2word < handle
                 this.selection.Paste();
                 % Make search one more time to find all instances
                 find.ClearFormatting();
-                find.Replacement.ClearFormatting();
                 find.Text = findString;
                 find.Wrap = 1;
                 find.MatchCase = true;
@@ -220,7 +216,6 @@ classdef matlab2word < handle
             find = this.selection.Find;
             % Search parameters setup
             find.ClearFormatting();
-            find.Replacement.ClearFormatting();
             find.Text = findString;
             find.Wrap = 1;
             find.MatchCase = true;
@@ -243,7 +238,6 @@ classdef matlab2word < handle
                 
                 % Make search one more time to find all instances
                 find.ClearFormatting();
-                find.Replacement.ClearFormatting();
                 find.Text = findString;
                 find.Wrap = 1;
                 find.MatchCase = true;
