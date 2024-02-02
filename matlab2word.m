@@ -1,6 +1,6 @@
 classdef matlab2word < handle
     %MATLAB2WORD Transfers calculations to Word report
-    %   matlab2word v1.4.2
+    %   matlab2word v1.4.3
     %   Created by TAN4UK
     %   This library can help to transfer your calculations into
     %   Microsoft Word report file.
@@ -49,7 +49,7 @@ classdef matlab2word < handle
     %
     %
     %   LICENSE
-    %     Copyright (C) 2023 TAN4UK. All Rights Reserved.
+    %     Copyright (C) 2024 TAN4UK. All Rights Reserved.
     %
     %     Permission is hereby granted, free of charge, to any person
     %     obtaining a copy of this software and associated documentation
@@ -351,10 +351,12 @@ classdef matlab2word < handle
         function PasteData(this, replace_data)
             %PasteData Just checks data format and pastes it
             
-            if iscell(replace_data)
-                % if input data is a cell with char array from table
-                this.selection.TypeText(replace_data{1, 1});
-            elseif isfloat(replace_data)
+            while iscell(replace_data)
+                % if input data is an multilayer cell
+                replace_data = replace_data{1, 1};
+            end
+            
+            if isfloat(replace_data)
                 % Paste number
                 float_str =  num2str(replace_data);
                 % Replace dot by comma if needed

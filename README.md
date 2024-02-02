@@ -28,4 +28,4 @@ If you want to select a place to save, use the method .SaveManually().
 -   You can use data for replacement not only from MATLAB but also from another file.
 
 v1.0.0 - Initial version.
--   Abilities to write text, numbers, and plots into Word.
+-   Abilities to write text, numbers, tables, and plots into Word.
